@@ -1556,21 +1556,31 @@
     function buildQueueForSloka(ch, sloka) {
       const scope = dom.audioLangScope.value;
       const list = [];
-      const cleanSanskrit = sloka.sanskrit.replace(/[|॥]/g, "।");
+      const cleanSanskrit = sloka.sanskrit
+        .replace(/[|॥]/g, "। ")
+        .replace(/\n+/g, "। ")
+        .replace(/\s+/g, " ")
+        .trim();
+      const naturalHindi = sloka.hindi.replace(/;/g, "। ").replace(/,/g, "। ").replace(/\s+/g, " ").trim();
+      const naturalEnglish = sloka.english.replace(/;/g, ". ").replace(/—/g, ", ").replace(/\s+/g, " ").trim();
+      const naturalMessage = sloka.message.replace(/—/g, ", ").replace(/\s+/g, " ").trim();
+
       if (scope === "hi" || scope === "both") {
         list.push({
           lang: "hi-IN",
-          rate: 0.96,
+          rate: 0.78,
+          pitch: 0.96,
           label: `Hindi Sloka ${sloka.num}`,
-          text: `अध्याय ${ch.chapter}, श्लोक ${sloka.num}। ${cleanSanskrit}। अर्थ: ${sloka.hindi}`
+          text: `अध्याय ${ch.chapter}, श्लोक ${sloka.num}। ${cleanSanskrit}। अर्थ: ${naturalHindi}`
         });
       }
       if (scope === "en" || scope === "both") {
         list.push({
           lang: "en-IN",
-          rate: 0.98,
+          rate: 0.8,
+          pitch: 0.97,
           label: `English Sloka ${sloka.num}`,
-          text: `Chapter ${ch.chapter}, Sloka ${sloka.num}. ${sloka.english} Essence: ${sloka.message}`
+          text: `Chapter ${ch.chapter}, Sloka ${sloka.num}. ${naturalEnglish}. Essence: ${naturalMessage}`
         });
       }
       return list;
@@ -1633,6 +1643,7 @@
         const utter = new SpeechSynthesisUtterance(item.text);
         utter.lang = item.lang;
         utter.rate = item.rate;
+        utter.pitch = item.pitch || 0.97;
         const voice = pickVoice(item.lang.split("-")[0]);
         if (voice) {
           utter.voice = voice;
